@@ -7,8 +7,11 @@
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
     <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/jonasvanbrabant22-bot/Runtrack/main/Glanzend%20icoon%20van%20Runtrack%20app.jpeg">
-  <link rel="apple-touch-icon" href="https://img.icons8.com/?id=4X4rV74S578S&format=png&color=000000">
+    <link rel="apple-touch-icon-precomposed" href="https://raw.githubusercontent.com/jonasvanbrabant22-bot/Runtrack/main/Glanzend%20icoon%20van%20Runtrack%20app.jpeg">
+    
+    <meta name="apple-mobile-web-app-title" content="RunTrack">
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -64,6 +67,293 @@
         .btn-block { background: #2ecc71; padding: 20px; text-align: center; border-radius: 18px; margin-top: 25px; font-weight: 800; cursor: pointer; color: black; }
         .btn-delete { color: #ff4757; margin-top: 25px; text-align: center; cursor: pointer; font-weight: 700; opacity: 0.8; padding: 10px; }
 
+        .list-item { 
+            background: #111; padding: 20px; border-radius: 24px; margin-bottom: 12px; 
+            display: flex; justify-content: space-between; align-items: center; border: 1px solid #222;
+        }
+        .list-info { display: flex; flex-direction: column; gap: 4px; }
+        .list-date { color: #555; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .list-stats { font-size: 18px; font-weight: 800; color: #fff; }
+        .list-time { color: #444; font-size: 15px; font-weight: 500; margin-left: 6px; }
+        
+        .extra-metrics { display: flex; gap: 8px; margin-top: 4px; }
+        .m-badge { font-size: 10px; padding: 3px 8px; border-radius: 6px; background: #1a1a1a; color: #aaa; border: 1px solid #333; font-weight: 600; }
+
+        .list-metrics { text-align: right; }
+        .bpm-badge { 
+            background: rgba(0, 210, 255, 0.1); color: #00d2ff; padding: 6px 12px; border-radius: 12px; 
+            font-weight: 900; font-family: tabular-nums; font-size: 16px; 
+            display: inline-block; margin-bottom: 4px; border: 1px solid rgba(0, 210, 255, 0.2);
+        }
+        .ef-sub { color: #2ecc71; font-size: 12px; font-weight: 700; display: block; font-family: monospace; }
+    </style>
+</head>
+<body>
+
+<div id="screen-home" class="container">
+    <div class="grid">
+        <div class="card" onclick="openDetail('zone2')">
+            <div class="card-header">
+                <span class="badge">Zone 2 Run</span>
+                <div id="val_zone2" class="latest-val">-- <span class="unit">EF</span></div>
+            </div>
+            <div class="mini-chart-container"><canvas id="mini_zone2"></canvas></div>
+        </div>
+        <div class="card" onclick="openDetail('vo2max')">
+            <div class="card-header">
+                <span class="badge" style="color:#3498db; background:rgba(52, 152, 219, 0.1); border-color:rgba(52, 152, 219, 0.2);">VO2max Run</span>
+                <div id="val_vo2max" class="latest-val">-- <span class="unit">EF</span></div>
+            </div>
+            <div class="mini-chart-container"><canvas id="mini_vo2max"></canvas></div>
+        </div>
+        <div class="card" onclick="openDetail('afstand')">
+            <div class="card-header">
+                <span class="badge" style="color:#e67e22; background:rgba(230, 126, 34, 0.1); border-color:rgba(230, 126, 34, 0.2);">Afstand Run</span>
+                <div id="val_afstand" class="latest-val">-- <span class="unit">EF</span></div>
+            </div>
+            <div class="mini-chart-container"><canvas id="mini_afstand"></canvas></div>
+        </div>
+    </div>
+</div>
+
+<div id="screen-detail" class="container hidden">
+    <div class="topbar">
+        <button class="icon-btn back-btn" onclick="showHome()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2ecc71" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div id="detail-title" style="font-weight: 800; font-size: 19px;"></div>
+        <button class="icon-btn add-btn" onclick="showForm()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        </button>
+    </div>
+    <div id="run-list"></div>
+</div>
+
+<div id="screen-form" class="container hidden">
+    <div class="topbar">
+        <button class="icon-btn back-btn" onclick="cancelForm()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+        <div id="form-title" style="font-weight: 800; font-size: 19px;">Run Invoeren</div>
+        <div style="width: 48px;"></div>
+    </div>
+    <input type="hidden" id="edit-index">
+    <input type="date" id="input-date">
+    <input type="number" id="input-dist" step="0.01" placeholder="Afstand (km)" inputmode="decimal">
+    <input type="number" id="input-hr" placeholder="Gem. hartslag" inputmode="numeric">
+    <div class="form-row">
+        <input type="number" id="input-h" placeholder="Uur" inputmode="numeric">
+        <input type="number" id="input-m" placeholder="Min" inputmode="numeric">
+        <input type="number" id="input-s" placeholder="Sec" inputmode="numeric">
+    </div>
+    <div class="btn-block" onclick="saveRun()">Opslaan</div>
+    <div id="delete-container" class="hidden"><div class="btn-delete" onclick="deleteRun()">Verwijder training</div></div>
+</div>
+
+<script>
+let currentCategory = "";
+let charts = {};
+
+function repairMissingData() {
+    ['zone2', 'vo2max', 'afstand'].forEach(cat => {
+        let data = JSON.parse(localStorage.getItem('rundata_' + cat)) || [];
+        let changed = false;
+        
+        data = data.map(entry => {
+            const h = parseInt(entry.h) || 0;
+            const m = parseInt(entry.m) || 0;
+            const s = parseInt(entry.s) || 0;
+            const totalMin = (h * 60) + m + (s / 60);
+            const dist = parseFloat(entry.dist);
+
+            if (totalMin > 0 && dist > 0) {
+                if (!entry.ef) {
+                    entry.ef = ((dist * 1000) / totalMin) / entry.hr;
+                    entry.displayVal = entry.ef.toFixed(2);
+                    changed = true;
+                }
+                if (!entry.speed) {
+                    entry.speed = (dist / (totalMin / 60)).toFixed(1);
+                    changed = true;
+                }
+                if (!entry.pace) {
+                    const pMin = Math.floor(totalMin / dist);
+                    const pSec = Math.round((totalMin / dist - pMin) * 60);
+                    entry.pace = `${pMin}:${pSec < 10 ? '0' + pSec : pSec}`;
+                    changed = true;
+                }
+            }
+            return entry;
+        });
+        
+        if (changed) {
+            localStorage.setItem('rundata_' + cat, JSON.stringify(data));
+        }
+    });
+}
+
+function getLocalData(cat) {
+    let data = JSON.parse(localStorage.getItem('rundata_' + cat)) || [];
+    return data.sort((a,b) => new Date(a.date) - new Date(b.date));
+}
+
+function saveRun() {
+    const dist = parseFloat(document.getElementById('input-dist').value);
+    const hr = parseFloat(document.getElementById('input-hr').value);
+    const h = parseInt(document.getElementById('input-h').value) || 0;
+    const m = parseInt(document.getElementById('input-m').value) || 0;
+    const s = parseInt(document.getElementById('input-s').value) || 0;
+    
+    if(!dist || !hr || (h+m+s === 0)) return alert("Vul alle velden in.");
+    
+    const totalMin = (h * 60) + m + (s / 60);
+    const ef = ((dist * 1000) / totalMin) / hr;
+    
+    const speedKmh = (dist / (totalMin / 60)).toFixed(1);
+    const paceMin = Math.floor(totalMin / dist);
+    const paceSec = Math.round((totalMin / dist - paceMin) * 60);
+    const paceStr = `${paceMin}:${paceSec < 10 ? '0' + paceSec : paceSec}`;
+
+    let data = getLocalData(currentCategory);
+    const entry = {
+        date: document.getElementById('input-date').value,
+        dist: dist.toFixed(2), 
+        hr, h, m, s, ef,
+        displayVal: ef.toFixed(2),
+        timeStr: `${h>0?h+'u ':''}${m}m ${s}s`,
+        speed: speedKmh,
+        pace: paceStr
+    };
+    
+    const idx = document.getElementById('edit-index').value;
+    if(idx !== "" && idx > -1) {
+        data[parseInt(idx)] = entry; 
+    } else {
+        data.push(entry);
+    }
+    localStorage.setItem('rundata_' + currentCategory, JSON.stringify(data));
+    openDetail(currentCategory);
+}
+
+function renderList() {
+    const data = getLocalData(currentCategory);
+    const listHtml = [...data].reverse().map((d, i) => `
+        <div class="list-item" onclick="showForm(${data.length - 1 - i})">
+            <div class="list-info">
+                <span class="list-date">${new Date(d.date).toLocaleDateString('nl-NL', {day:'numeric', month:'short', year:'numeric'})}</span>
+                <div class="list-stats">${d.dist} km <span class="list-time">${d.timeStr}</span></div>
+                <div class="extra-metrics">
+                    <span class="m-badge">${d.speed || '--'} km/u</span>
+                    <span class="m-badge">${d.pace || '--'} min/km</span>
+                </div>
+            </div>
+            <div class="list-metrics">
+                <span class="bpm-badge">${d.hr} <span style="font-size:10px; opacity:0.7;">BPM</span></span>
+                <span class="ef-sub">EF: ${d.displayVal}</span>
+            </div>
+        </div>`).join('');
+    document.getElementById('run-list').innerHTML = listHtml;
+}
+
+function updateDashboard() {
+    repairMissingData();
+    ['zone2', 'vo2max', 'afstand'].forEach(cat => {
+        const data = getLocalData(cat);
+        const lastVal = data.length > 0 ? data[data.length - 1].displayVal : "--";
+        document.getElementById('val_' + cat).innerHTML = `${lastVal} <span class="unit">EF</span>`;
+        
+        const canvas = document.getElementById('mini_' + cat);
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        
+        if(charts[cat]) charts[cat].destroy();
+        charts[cat] = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.map(d => d.date),
+                datasets: [{
+                    data: data.map(d => d.ef),
+                    borderColor: '#2ecc71',
+                    borderWidth: 3,
+                    pointRadius: 0,
+                    tension: 0.4,
+                    fill: true,
+                    backgroundColor: (context) => {
+                        const chart = context.chart;
+                        const {ctx, chartArea} = chart;
+                        if (!chartArea) return null;
+                        const gradient = ctx.createLinearGradient(0, 0, 0, 100);
+                        gradient.addColorStop(0, 'rgba(46, 204, 113, 0.2)');
+                        gradient.addColorStop(1, 'rgba(46, 204, 113, 0)');
+                        return gradient;
+                    }
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { x: { display: false }, y: { display: false, grace: '30%' } },
+                layout: { padding: { top: 25 } }
+            }
+        });
+    });
+}
+
+function showHome() { 
+    hideAll(); 
+    document.getElementById('screen-home').classList.remove('hidden'); 
+    updateDashboard(); 
+}
+
+function openDetail(category) { 
+    currentCategory = category; 
+    hideAll(); 
+    document.getElementById('screen-detail').classList.remove('hidden'); 
+    const titles = {'zone2': 'Zone 2', 'vo2max': 'VO2max', 'afstand': 'Afstand'};
+    document.getElementById('detail-title').innerText = titles[category] || "Details";
+    renderList(); 
+}
+
+function showForm(editIndex = -1) {
+    hideAll(); 
+    document.getElementById('screen-form').classList.remove('hidden');
+    document.getElementById('edit-index').value = editIndex;
+    if(editIndex > -1) {
+        const entry = getLocalData(currentCategory)[editIndex];
+        document.getElementById('input-date').value = entry.date;
+        document.getElementById('input-dist').value = entry.dist;
+        document.getElementById('input-hr').value = entry.hr;
+        document.getElementById('input-h').value = (entry.h !== undefined) ? entry.h : "";
+        document.getElementById('input-m').value = (entry.m !== undefined) ? entry.m : "";
+        document.getElementById('input-s').value = (entry.s !== undefined) ? entry.s : "";
+        document.getElementById('delete-container').classList.remove('hidden');
+    } else {
+        document.getElementById('input-date').valueAsDate = new Date();
+        ['input-dist', 'input-hr', 'input-h', 'input-m', 'input-s', 'edit-index'].forEach(id => document.getElementById(id).value = "");
+        document.getElementById('delete-container').classList.add('hidden');
+    }
+}
+
+function deleteRun() {
+    if(!confirm("Verwijderen?")) return;
+    let data = getLocalData(currentCategory);
+    data.splice(parseInt(document.getElementById('edit-index').value), 1);
+    localStorage.setItem('rundata_' + currentCategory, JSON.stringify(data));
+    openDetail(currentCategory);
+}
+
+function cancelForm() { openDetail(currentCategory); }
+
+function hideAll() { 
+    document.querySelectorAll('.container').forEach(c => c.classList.add('hidden')); 
+}
+
+window.onload = () => { 
+    updateDashboard(); 
+};
+</script>
+</body>
+</html>
         .list-item { 
             background: #111; padding: 20px; border-radius: 24px; margin-bottom: 12px; 
             display: flex; justify-content: space-between; align-items: center; border: 1px solid #222;
