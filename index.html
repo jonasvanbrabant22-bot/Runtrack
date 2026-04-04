@@ -14,218 +14,59 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { 
-            margin: 0; 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            background: #000; 
-            color: white; 
+            margin: 0; font-family: -apple-system, system-ui, sans-serif; 
+            background: #000; color: white; 
+            padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom);
             -webkit-tap-highlight-color: transparent;
-            padding-top: env(safe-area-inset-top);
-            padding-bottom: env(safe-area-inset-bottom);
         }
         .container { padding: 20px 25px; max-width: 500px; margin: auto; }
         .grid { display: grid; grid-template-columns: 1fr; gap: 18px; margin-top: 10px; }
         
+        /* De kaart is nu een button voor betere iPhone compatibiliteit */
         .card { 
             background: #111; border-radius: 28px; padding: 22px; 
-            height: 160px; cursor: pointer; transition: all 0.2s ease;
-            display: flex; flex-direction: column; position: relative;
-            border: 1px solid #222; overflow: hidden;
-            z-index: 10; /* Zorgt dat de kaart altijd klikbaar is */
+            height: 160px; border: 1px solid #222; overflow: hidden;
+            position: relative; display: flex; flex-direction: column;
+            text-align: left; width: 100%; color: inherit; appearance: none; -webkit-appearance: none;
+            cursor: pointer; touch-action: manipulation;
         }
-        .card:active { transform: scale(0.96); background: #161616; }
-        .card-header { display: flex; justify-content: space-between; align-items: center; z-index: 20; position: relative; }
+        .card:active { background: #1a1a1a; transform: scale(0.98); }
         
+        .card-header { display: flex; justify-content: space-between; align-items: center; z-index: 5; width: 100%; }
         .badge {
             background: rgba(46, 204, 113, 0.1); color: #2ecc71; padding: 6px 14px;
             border-radius: 100px; font-size: 11px; font-weight: 800; text-transform: uppercase;
-            letter-spacing: 1px; border: 1px solid rgba(46, 204, 113, 0.2);
+            border: 1px solid rgba(46, 204, 113, 0.2);
         }
-        
-        .latest-val { font-size: 28px; font-weight: 900; color: #fff; font-family: tabular-nums; }
-        .unit { font-size: 12px; color: #555; margin-left: 4px; font-weight: 600; }
+        .latest-val { font-size: 28px; font-weight: 900; }
+        .unit { font-size: 12px; color: #555; margin-left: 4px; }
         .mini-chart-container { position: absolute; bottom: 0; left: 0; right: 0; height: 85px; z-index: 1; pointer-events: none; }
         
         .hidden { display: none !important; }
-        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; height: 50px; }
-        
-        .icon-btn { 
-            width: 48px; height: 48px; border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center; 
-            cursor: pointer; border: none; outline: none;
-        }
-        .back-btn { background: #111; border: 1px solid #222; }
-        .add-btn { background: #2ecc71; color: white; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .icon-btn { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #111; border: 1px solid #222; color: white; font-size: 20px; }
+        .add-btn { background: #2ecc71; border: none; }
 
-        input { 
-            width: 100%; padding: 18px; margin: 8px 0; border-radius: 16px; 
-            border: 1px solid #222; background: #111; color: white; 
-            box-sizing: border-box; font-size: 17px;
-        }
+        input { width: 100%; padding: 18px; margin: 8px 0; border-radius: 16px; border: 1px solid #222; background: #111; color: white; font-size: 17px; box-sizing: border-box; }
         .form-row { display: flex; gap: 10px; }
-        .btn-block { background: #2ecc71; padding: 20px; text-align: center; border-radius: 18px; margin-top: 25px; font-weight: 800; cursor: pointer; color: black; }
-        .btn-delete { color: #ff4757; margin-top: 25px; text-align: center; cursor: pointer; font-weight: 700; opacity: 0.8; padding: 10px; }
+        .btn-block { background: #2ecc71; padding: 20px; text-align: center; border-radius: 18px; margin-top: 25px; font-weight: 800; color: black; }
+        .btn-delete { color: #ff4757; text-align: center; padding: 15px; font-weight: 700; margin-top: 10px; }
 
-        .list-item { 
-            background: #111; padding: 20px; border-radius: 24px; margin-bottom: 12px; 
-            display: flex; justify-content: space-between; align-items: center; border: 1px solid #222;
-        }
-        .list-info { display: flex; flex-direction: column; gap: 4px; }
+        .list-item { background: #111; padding: 20px; border-radius: 24px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #222; }
         .list-date { color: #555; font-size: 11px; font-weight: 700; text-transform: uppercase; }
-        .list-stats { font-size: 18px; font-weight: 800; color: #fff; }
-        .list-time { color: #444; font-size: 15px; font-weight: 500; margin-left: 6px; }
-        
-        .extra-metrics { display: flex; gap: 8px; margin-top: 4px; }
-        .m-badge { font-size: 10px; padding: 3px 8px; border-radius: 6px; background: #1a1a1a; color: #aaa; border: 1px solid #333; font-weight: 600; }
-
-        .list-metrics { text-align: right; }
-        .bpm-badge { 
-            background: rgba(0, 210, 255, 0.1); color: #00d2ff; padding: 6px 12px; border-radius: 12px; 
-            font-weight: 900; font-family: tabular-nums; font-size: 16px; 
-            display: inline-block; margin-bottom: 4px; border: 1px solid rgba(0, 210, 255, 0.2);
-        }
-        .ef-sub { color: #2ecc71; font-size: 12px; font-weight: 700; display: block; font-family: monospace; }
+        .list-stats { font-size: 18px; font-weight: 800; }
+        .bpm-badge { background: rgba(0, 210, 255, 0.1); color: #00d2ff; padding: 6px 12px; border-radius: 12px; font-weight: 900; }
+        .ef-sub { color: #2ecc71; font-size: 12px; font-weight: 700; display: block; text-align: right; }
     </style>
 </head>
 <body>
 
 <div id="screen-home" class="container">
     <div class="grid">
-        <div class="card" onclick="openDetail('zone2')">
-            <div class="card-header">
-                <span class="badge">Zone 2 Run</span>
-                <div id="val_zone2" class="latest-val">-- <span class="unit">EF</span></div>
-            </div>
+        <button class="card" onclick="openDetail('zone2')">
+            <div class="card-header"><span class="badge">Zone 2</span><div id="val_zone2" class="latest-val">-- <span class="unit">EF</span></div></div>
             <div class="mini-chart-container"><canvas id="mini_zone2"></canvas></div>
-        </div>
-        <div class="card" onclick="openDetail('vo2max')">
-            <div class="card-header">
-                <span class="badge" style="color:#3498db; background:rgba(52, 152, 219, 0.1); border-color:rgba(52, 152, 219, 0.2);">VO2max Run</span>
-                <div id="val_vo2max" class="latest-val">-- <span class="unit">EF</span></div>
-            </div>
-            <div class="mini-chart-container"><canvas id="mini_vo2max"></canvas></div>
-        </div>
-        <div class="card" onclick="openDetail('afstand')">
-            <div class="card-header">
-                <span class="badge" style="color:#e67e22; background:rgba(230, 126, 34, 0.1); border-color:rgba(230, 126, 34, 0.2);">Afstand Run</span>
-                <div id="val_afstand" class="latest-val">-- <span class="unit">EF</span></div>
-            </div>
-            <div class="mini-chart-container"><canvas id="mini_afstand"></canvas></div>
-        </div>
-    </div>
-</div>
-
-<div id="screen-detail" class="container hidden">
-    <div class="topbar">
-        <button class="icon-btn back-btn" onclick="showHome()">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2ecc71" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
         </button>
-        <div id="detail-title" style="font-weight: 800; font-size: 19px;"></div>
-        <button class="icon-btn add-btn" onclick="showForm()">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        </button>
-    </div>
-    <div id="run-list"></div>
-</div>
-
-<div id="screen-form" class="container hidden">
-    <div class="topbar">
-        <button class="icon-btn back-btn" onclick="cancelForm()">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-        </button>
-        <div id="form-title" style="font-weight: 800; font-size: 19px;">Invoeren</div>
-    </div>
-    <input type="hidden" id="edit-index">
-    <input type="date" id="input-date">
-    <input type="number" id="input-dist" step="0.01" placeholder="Afstand (km)">
-    <input type="number" id="input-hr" placeholder="Gem. hartslag">
-    <div class="form-row">
-        <input type="number" id="input-h" placeholder="Uur">
-        <input type="number" id="input-m" placeholder="Min">
-        <input type="number" id="input-s" placeholder="Sec">
-    </div>
-    <div class="btn-block" onclick="saveRun()">Opslaan</div>
-    <div id="delete-container" class="hidden"><div class="btn-delete" onclick="deleteRun()">Verwijder training</div></div>
-</div>
-
-<script>
-let currentCategory = "";
-let charts = {};
-
-function getLocalData(cat) {
-    let data = JSON.parse(localStorage.getItem('rundata_' + cat)) || [];
-    return data.sort((a,b) => new Date(a.date) - new Date(b.date));
-}
-
-function saveRun() {
-    const dist = parseFloat(document.getElementById('input-dist').value);
-    const hr = parseFloat(document.getElementById('input-hr').value);
-    const h = parseInt(document.getElementById('input-h').value) || 0;
-    const m = parseInt(document.getElementById('input-m').value) || 0;
-    const s = parseInt(document.getElementById('input-s').value) || 0;
-    
-    if(!dist || !hr || (h+m+s === 0)) return alert("Vul alle velden in.");
-    const totalMin = (h * 60) + m + (s / 60);
-    const ef = ((dist * 1000) / totalMin) / hr;
-    const speedKmh = (dist / (totalMin / 60)).toFixed(1);
-    const paceMin = Math.floor(totalMin / dist);
-    const paceSec = Math.round((totalMin / dist - paceMin) * 60);
-    const paceStr = `${paceMin}:${paceSec < 10 ? '0' + paceSec : paceSec}`;
-
-    let data = getLocalData(currentCategory);
-    const entry = {
-        date: document.getElementById('input-date').value,
-        dist: dist.toFixed(2), hr, h, m, s, ef, displayVal: ef.toFixed(2),
-        timeStr: `${h>0?h+'u ':''}${m}m ${s}s`, speed: speedKmh, pace: paceStr
-    };
-    
-    const idx = document.getElementById('edit-index').value;
-    if(idx !== "" && idx > -1) { data[parseInt(idx)] = entry; } else { data.push(entry); }
-    localStorage.setItem('rundata_' + currentCategory, JSON.stringify(data));
-    openDetail(currentCategory);
-}
-
-function renderList() {
-    const data = getLocalData(currentCategory);
-    document.getElementById('run-list').innerHTML = [...data].reverse().map((d, i) => `
-        <div class="list-item" onclick="showForm(${data.length - 1 - i})">
-            <div class="list-info">
-                <span class="list-date">${new Date(d.date).toLocaleDateString('nl-NL')}</span>
-                <div class="list-stats">${d.dist} km <span class="list-time">${d.timeStr}</span></div>
-            </div>
-            <div class="list-metrics">
-                <span class="bpm-badge">${d.hr} BPM</span>
-                <span class="ef-sub">EF: ${d.displayVal}</span>
-            </div>
-        </div>`).join('');
-}
-
-function updateDashboard() {
-    ['zone2', 'vo2max', 'afstand'].forEach(cat => {
-        const data = getLocalData(cat);
-        const lastVal = data.length > 0 ? data[data.length - 1].displayVal : "--";
-        document.getElementById('val_' + cat).innerHTML = `${lastVal} <span class="unit">EF</span>`;
-        
-        const canvas = document.getElementById('mini_' + cat);
-        if (!canvas) return;
-        if(charts[cat]) charts[cat].destroy();
-        charts[cat] = new Chart(canvas.getContext('2d'), {
-            type: 'line',
-            data: {
-                labels: data.map(d => d.date),
-                datasets: [{ data: data.map(d => d.ef), borderColor: '#2ecc71', borderWidth: 3, pointRadius: 0, tension: 0.4 }]
-            },
-            options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
-        });
-    });
-}
-
-function showHome() { hideAll(); document.getElementById('screen-home').classList.remove('hidden'); updateDashboard(); }
-function openDetail(category) { currentCategory = category; hideAll(); document.getElementById('screen-detail').classList.remove('hidden'); document.getElementById('detail-title').innerText = category.toUpperCase(); renderList(); }
-function showForm(editIndex = -1) { hideAll(); document.getElementById('screen-form').classList.remove('hidden'); document.getElementById('edit-index').value = editIndex; if(editIndex > -1) { /* fill fields */ } else { document.getElementById('input-date').valueAsDate = new Date(); } }
-function cancelForm() { openDetail(currentCategory); }
-function hideAll() { document.querySelectorAll('.container').forEach(c => c.classList.add('hidden')); }
-
-window.onload = () => { updateDashboard(); };
-</script>
-</body>
-</html>
+        <button class="card" onclick="openDetail('vo2max')">
+            <div class="card-header"><span class="badge" style="color:#3498db; border-color:rgba(52,152,219,0.3);">VO2max</span><div id="val_vo2max" class="latest-val">-- <span class="unit">EF</span></div></div>
+            <div class="mini-chart-container
