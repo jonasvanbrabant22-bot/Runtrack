@@ -109,6 +109,19 @@ let charts = {};
 
 function getLocalData(cat) {
     let data = JSON.parse(localStorage.getItem('rundata_' + cat)) || [];
+    // Zorg dat oude data ook snelheid/tempo krijgt bij het inladen
+    data = data.map(d => {
+        if (!d.speed || !d.pace) {
+            const totalMin = (parseInt(d.h || 0) * 60) + parseInt(d.m || 0) + (parseInt(d.s || 0) / 60);
+            if (totalMin > 0) {
+                d.speed = (parseFloat(d.dist) / (totalMin / 60)).toFixed(1);
+                const pMin = Math.floor(totalMin / parseFloat(d.dist));
+                const pSec = Math.round((totalMin / parseFloat(d.dist) - pMin) * 60);
+                d.pace = `${pMin}:${pSec < 10 ? '0' + pSec : pSec}`;
+            }
+        }
+        return d;
+    });
     return data.sort((a,b) => new Date(a.date) - new Date(b.date));
 }
 
@@ -119,12 +132,11 @@ function saveRun() {
     const m = parseInt(document.getElementById('input-m').value) || 0;
     const s = parseInt(document.getElementById('input-s').value) || 0;
     
-    if(!dist || !hr) return alert("Vul afstand en hartslag in!");
+    if(!dist || !hr || (h+m+s === 0)) return alert("Vul afstand, hartslag en tijd in!");
     
     const totalMin = (h * 60) + m + (s / 60);
     const ef = ((dist * 1000) / totalMin) / hr;
     
-    // Bereken extra statistieken
     const speedKmh = (dist / (totalMin / 60)).toFixed(1);
     const paceMin = Math.floor(totalMin / dist);
     const paceSec = Math.round((totalMin / dist - paceMin) * 60);
@@ -135,8 +147,7 @@ function saveRun() {
         date: document.getElementById('input-date').value,
         dist: dist.toFixed(2), hr, h, m, s, ef, displayVal: ef.toFixed(2),
         timeStr: `${h>0?h+'u ':''}${m}m ${s}s`,
-        speed: speedKmh,
-        pace: paceStr
+        speed: speedKmh, pace: paceStr
     };
     
     const idx = document.getElementById('edit-index').value;
@@ -180,12 +191,9 @@ function updateDashboard() {
                 labels: data.map(d => d.date),
                 datasets: [{ 
                     data: data.map(d => d.ef), 
-                    borderColor: '#2ecc71', 
-                    borderWidth: 3, 
-                    pointRadius: 0, 
-                    tension: 0.4,
-                    fill: true,
-                    backgroundColor: 'rgba(46, 204, 113, 0.05)'
+                    borderColor: cat === 'zone2' ? '#2ecc71' : (cat === 'vo2max' ? '#3498db' : '#e67e22'), 
+                    borderWidth: 3, pointRadius: 0, tension: 0.4, fill: true,
+                    backgroundColor: 'rgba(255,255,255,0.03)'
                 }]
             },
             options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false, grace: '20%' } } }
@@ -214,4 +222,11 @@ function showForm(idx = -1) {
         document.getElementById('delete-container').classList.add('hidden');
     }
 }
-function deleteRun() { if(confirm("Wissen?")) { let data = getLocalData(currentCategory); data.splice(document.getElementById('edit-index').value, 1); localStorage.setItem('rundata_' + currentCategory, JSON.stringify(data));
+function deleteRun() { if(confirm("Wissen?")) { let data = getLocalData(currentCategory); data.splice(document.getElementById('edit-index').value, 1); localStorage.setItem('rundata_' + currentCategory, JSON.stringify(data)); openDetail(currentCategory); } }
+function cancelForm() { openDetail(currentCategory); }
+function hideAll() { document.querySelectorAll('.container').forEach(c => c.classList.add('hidden')); }
+
+window.onload = showHome;
+</script>
+</body>
+</html>
