@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="RunTrack">
     
-    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/jonasvanbrabant22-bot/Runtrack/main/IMG_0753.PNG">
+    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/jonasvanbrabant22-bot/Runtrack/main/Runtrack.png?v=2">
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -32,11 +32,13 @@
         .card:active { background: #161616; transform: scale(0.97); }
         
         .card-header { display: flex; justify-content: space-between; align-items: center; z-index: 5; width: 100%; }
+        
         .badge {
             background: rgba(46, 204, 113, 0.1); color: #2ecc71; padding: 6px 14px;
             border-radius: 100px; font-size: 11px; font-weight: 800; text-transform: uppercase;
-            border: 1px solid rgba(46, 204, 113, 0.2);
+            border: 1px solid rgba(46, 204, 113, 0.2); pointer-events: none;
         }
+        
         .latest-val { font-size: 28px; font-weight: 900; font-family: tabular-nums; }
         .unit { font-size: 12px; color: #555; margin-left: 4px; }
         .mini-chart-container { position: absolute; bottom: 0; left: 0; right: 0; height: 85px; z-index: 1; pointer-events: none; }
@@ -51,25 +53,33 @@
         }
         .add-btn { background: #2ecc71; border: none; }
 
-        input { width: 100%; padding: 18px; margin: 8px 0; border-radius: 16px; border: 1px solid #222; background: #111; color: white; font-size: 17px; box-sizing: border-box; }
+        /* Klikbare titel in de topbar */
+        #detail-title { cursor: pointer; }
+        #detail-title:active { opacity: 0.6; }
+
+        /* INPUT FIX: iOS datumveld gelijk aan rest */
+        input { 
+            width: 100%; padding: 18px; margin: 8px 0; border-radius: 16px; 
+            border: 1px solid #222; background: #111; color: white; 
+            font-size: 17px; box-sizing: border-box; display: block;
+            appearance: none; -webkit-appearance: none; min-height: 58px;
+        }
+        
         .form-row { display: flex; gap: 10px; }
         .btn-block { background: #2ecc71; padding: 20px; text-align: center; border-radius: 18px; margin-top: 25px; font-weight: 800; color: black; cursor: pointer; }
         .btn-delete { color: #ff4757; text-align: center; padding: 15px; font-weight: 700; margin-top: 10px; cursor: pointer; opacity: 0.8; }
 
-        /* LIJST LAY-OUT FIX */
         .list-item { 
             background: #111; padding: 20px; border-radius: 24px; margin-bottom: 12px; 
             display: flex; justify-content: space-between; align-items: center; 
             border: 1px solid #222; gap: 15px;
         }
-        .list-left { flex: 1; min-width: 0; } /* Zorgt dat tekst niet duwt */
+        .list-left { flex: 1; min-width: 0; }
         .list-right { text-align: right; flex-shrink: 0; }
-        
         .list-date { color: #555; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; display: block; }
         .list-stats { font-size: 18px; font-weight: 800; white-space: nowrap; }
         .extra-metrics { display: flex; gap: 6px; margin-top: 6px; }
         .m-badge { font-size: 10px; padding: 4px 8px; border-radius: 8px; background: #1a1a1a; color: #888; border: 1px solid #222; font-weight: 600; }
-        
         .bpm-badge { 
             background: rgba(0, 210, 255, 0.1); color: #00d2ff; padding: 6px 12px; 
             border-radius: 12px; font-weight: 900; border: 1px solid rgba(0, 210, 255, 0.2);
@@ -82,17 +92,26 @@
 
 <div id="screen-home" class="container">
     <div class="grid">
-        <button class="card" onclick="openDetail('zone2')">
-            <div class="card-header"><span class="badge">Zone 2</span><div id="val_zone2" class="latest-val">-- <span class="unit">EF</span></div></div>
-            <div class="mini-chart-container"><canvas id="mini_zone2"></canvas></div>
+        <button class="card" onclick="openDetail('cat1')">
+            <div class="card-header">
+                <span class="badge" id="name_cat1">Laden...</span>
+                <div id="val_cat1" class="latest-val">-- <span class="unit">EF</span></div>
+            </div>
+            <div class="mini-chart-container"><canvas id="mini_cat1"></canvas></div>
         </button>
-        <button class="card" onclick="openDetail('vo2max')">
-            <div class="card-header"><span class="badge" style="color:#3498db; border-color:rgba(52,152,219,0.3); background:rgba(52,152,219,0.1);">VO2max</span><div id="val_vo2max" class="latest-val">-- <span class="unit">EF</span></div></div>
-            <div class="mini-chart-container"><canvas id="mini_vo2max"></canvas></div>
+        <button class="card" onclick="openDetail('cat2')">
+            <div class="card-header">
+                <span class="badge" id="name_cat2" style="color:#3498db; border-color:rgba(52,152,219,0.3); background:rgba(52,152,219,0.1);">Laden...</span>
+                <div id="val_cat2" class="latest-val">-- <span class="unit">EF</span></div>
+            </div>
+            <div class="mini-chart-container"><canvas id="mini_cat2"></canvas></div>
         </button>
-        <button class="card" onclick="openDetail('afstand')">
-            <div class="card-header"><span class="badge" style="color:#e67e22; border-color:rgba(230,126,34,0.3); background:rgba(230,126,34,0.1);">Afstand</span><div id="val_afstand" class="latest-val">-- <span class="unit">EF</span></div></div>
-            <div class="mini-chart-container"><canvas id="mini_afstand"></canvas></div>
+        <button class="card" onclick="openDetail('cat3')">
+            <div class="card-header">
+                <span class="badge" id="name_cat3" style="color:#e67e22; border-color:rgba(230,126,34,0.3); background:rgba(230,126,34,0.1);">Laden...</span>
+                <div id="val_cat3" class="latest-val">-- <span class="unit">EF</span></div>
+            </div>
+            <div class="mini-chart-container"><canvas id="mini_cat3"></canvas></div>
         </button>
     </div>
 </div>
@@ -102,7 +121,7 @@
         <button class="icon-btn" onclick="showHome()">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2ecc71" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
         </button>
-        <div id="detail-title" style="font-weight: 800; font-size: 19px; text-transform: uppercase;"></div>
+        <div id="detail-title" style="font-weight: 800; font-size: 19px; text-transform: uppercase;" onclick="renameCurrentCategory()"></div>
         <button class="icon-btn add-btn" onclick="showForm()">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         </button>
@@ -135,6 +154,23 @@
 let currentCategory = "";
 let charts = {};
 
+const defaultNames = { cat1: "Zone 2", cat2: "VO2max", cat3: "Afstand" };
+
+function getCategoryName(id) {
+    return localStorage.getItem('name_' + id) || defaultNames[id];
+}
+
+// Nieuwe functie om de huidige categorie te hernoemen vanaf scherm 2
+function renameCurrentCategory() {
+    const oldName = getCategoryName(currentCategory);
+    const newName = prompt("Nieuwe naam voor deze training:", oldName);
+    if (newName && newName.trim() !== "") {
+        localStorage.setItem('name_' + currentCategory, newName.trim());
+        document.getElementById('detail-title').innerText = newName.trim();
+        updateDashboard(); // Werk ook de namen op de achtergrond bij
+    }
+}
+
 function getLocalData(cat) {
     let data = JSON.parse(localStorage.getItem('rundata_' + cat)) || [];
     data = data.map(d => {
@@ -158,28 +194,20 @@ function saveRun() {
     const h = parseInt(document.getElementById('input-h').value) || 0;
     const m = parseInt(document.getElementById('input-m').value) || 0;
     const s = parseInt(document.getElementById('input-s').value) || 0;
-    
     if(!dist || !hr || (h+m+s === 0)) return alert("Vul alles volledig in!");
     
     const totalMin = (h * 60) + m + (s / 60);
     const ef = ((dist * 1000) / totalMin) / hr;
-    
-    const speedKmh = (dist / (totalMin / 60)).toFixed(1);
-    const paceMin = Math.floor(totalMin / dist);
-    const paceSec = Math.round((totalMin / dist - paceMin) * 60);
-    const paceStr = `${paceMin}:${paceSec < 10 ? '0' + paceSec : paceSec}`;
-
-    let data = getLocalData(currentCategory);
+    let data = JSON.parse(localStorage.getItem('rundata_' + currentCategory)) || [];
     const entry = {
         date: document.getElementById('input-date').value,
         dist: dist.toFixed(2), hr, h, m, s, ef, displayVal: ef.toFixed(2),
         timeStr: `${h>0?h+'u ':''}${m}m ${s}s`,
-        speed: speedKmh, pace: paceStr
+        speed: (dist / (totalMin / 60)).toFixed(1),
+        pace: `${Math.floor(totalMin/dist)}:${Math.round((totalMin/dist - Math.floor(totalMin/dist))*60).toString().padStart(2,'0')}`
     };
-    
     const idx = document.getElementById('edit-index').value;
     if(idx !== "" && idx > -1) { data[parseInt(idx)] = entry; } else { data.push(entry); }
-    
     localStorage.setItem('rundata_' + currentCategory, JSON.stringify(data));
     openDetail(currentCategory);
 }
@@ -204,21 +232,21 @@ function renderList() {
 }
 
 function updateDashboard() {
-    ['zone2', 'vo2max', 'afstand'].forEach(cat => {
-        const data = getLocalData(cat);
+    ['cat1', 'cat2', 'cat3'].forEach(id => {
+        document.getElementById('name_' + id).innerText = getCategoryName(id);
+        const data = getLocalData(id);
         const lastVal = data.length > 0 ? data[data.length - 1].displayVal : "--";
-        document.getElementById('val_' + cat).innerHTML = `${lastVal} <span class="unit">EF</span>`;
-        
-        const canvas = document.getElementById('mini_' + cat);
+        document.getElementById('val_' + id).innerHTML = `${lastVal} <span class="unit">EF</span>`;
+        const canvas = document.getElementById('mini_' + id);
         if (!canvas) return;
-        if(charts[cat]) charts[cat].destroy();
-        charts[cat] = new Chart(canvas.getContext('2d'), {
+        if(charts[id]) charts[id].destroy();
+        charts[id] = new Chart(canvas.getContext('2d'), {
             type: 'line',
             data: {
                 labels: data.map(d => d.date),
                 datasets: [{ 
                     data: data.map(d => d.ef), 
-                    borderColor: cat === 'zone2' ? '#2ecc71' : (cat === 'vo2max' ? '#3498db' : '#e67e22'), 
+                    borderColor: id === 'cat1' ? '#2ecc71' : (id === 'cat2' ? '#3498db' : '#e67e22'), 
                     borderWidth: 3, pointRadius: 0, tension: 0.4, fill: true,
                     backgroundColor: 'rgba(255,255,255,0.02)'
                 }]
@@ -229,7 +257,14 @@ function updateDashboard() {
 }
 
 function showHome() { hideAll(); document.getElementById('screen-home').classList.remove('hidden'); updateDashboard(); }
-function openDetail(cat) { currentCategory = cat; hideAll(); document.getElementById('screen-detail').classList.remove('hidden'); document.getElementById('detail-title').innerText = cat; renderList(); }
+function openDetail(cat) { 
+    currentCategory = cat; 
+    hideAll(); 
+    document.getElementById('screen-detail').classList.remove('hidden'); 
+    document.getElementById('detail-title').innerText = getCategoryName(cat); 
+    renderList(); 
+}
+
 function showForm(idx = -1) { 
     hideAll(); 
     document.getElementById('screen-form').classList.remove('hidden'); 
@@ -249,7 +284,8 @@ function showForm(idx = -1) {
         document.getElementById('delete-container').classList.add('hidden');
     }
 }
-function deleteRun() { if(confirm("Training verwijderen?")) { let data = getLocalData(currentCategory); data.splice(document.getElementById('edit-index').value, 1); localStorage.setItem('rundata_' + currentCategory, JSON.stringify(data)); openDetail(currentCategory); } }
+
+function deleteRun() { if(confirm("Training verwijderen?")) { let data = JSON.parse(localStorage.getItem('rundata_' + currentCategory)) || []; data.splice(document.getElementById('edit-index').value, 1); localStorage.setItem('rundata_' + currentCategory, JSON.stringify(data)); openDetail(currentCategory); } }
 function cancelForm() { openDetail(currentCategory); }
 function hideAll() { document.querySelectorAll('.container').forEach(c => c.classList.add('hidden')); }
 
