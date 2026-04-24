@@ -13,34 +13,62 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        :root {
+            --bg-color: #000;
+            --card-bg: #111;
+            --text-color: #fff;
+            --border-color: #222;
+            --sub-text: #555;
+            --modal-overlay: rgba(0,0,0,0.85);
+            --input-bg: #111;
+            --accent-green: #2ecc71;
+            --list-item-bg: #111;
+            --fab-bg: #111;
+            --fab-stroke: #555;
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f2f2f7;
+            --card-bg: #fff;
+            --text-color: #000;
+            --border-color: #e5e5ea;
+            --sub-text: #8e8e93;
+            --modal-overlay: rgba(0,0,0,0.4);
+            --input-bg: #fff;
+            --list-item-bg: #fff;
+            --fab-bg: #fff;
+            --fab-stroke: #8e8e93;
+        }
+
         body { 
             margin: 0; font-family: -apple-system, system-ui, sans-serif; 
-            background: #000; color: white; 
+            background: var(--bg-color); color: var(--text-color); 
             padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom);
             -webkit-tap-highlight-color: transparent;
+            transition: background 0.3s ease, color 0.3s ease;
         }
         .container { padding: 20px 25px; max-width: 500px; margin: auto; }
         .grid { display: grid; grid-template-columns: 1fr; gap: 18px; margin-top: 10px; }
         
         .card { 
-            background: #111; border-radius: 28px; padding: 22px; 
-            height: 160px; border: 1px solid #222; overflow: hidden;
+            background: var(--card-bg); border-radius: 28px; padding: 22px; 
+            height: 160px; border: 1px solid var(--border-color); overflow: hidden;
             position: relative; display: flex; flex-direction: column;
             text-align: left; width: 100%; color: inherit; appearance: none; -webkit-appearance: none;
-            cursor: pointer; touch-action: manipulation;
+            cursor: pointer; touch-action: manipulation; transition: background 0.3s ease, border 0.3s ease;
         }
-        .card:active { background: #161616; transform: scale(0.97); }
+        .card:active { transform: scale(0.97); opacity: 0.8; }
         
         .card-header { display: flex; justify-content: space-between; align-items: center; z-index: 5; width: 100%; }
         
         .badge {
-            background: rgba(46, 204, 113, 0.1); color: #2ecc71; padding: 6px 14px;
+            background: rgba(46, 204, 113, 0.1); color: var(--accent-green); padding: 6px 14px;
             border-radius: 100px; font-size: 11px; font-weight: 800; text-transform: uppercase;
             border: 1px solid rgba(46, 204, 113, 0.2); pointer-events: none;
         }
         
         .latest-val { font-size: 28px; font-weight: 900; font-family: tabular-nums; }
-        .unit { font-size: 12px; color: #555; margin-left: 4px; }
+        .unit { font-size: 12px; color: var(--sub-text); margin-left: 4px; }
         .mini-chart-container { position: absolute; bottom: 0; left: 0; right: 0; height: 85px; z-index: 1; pointer-events: none; }
         
         .hidden { display: none !important; }
@@ -49,247 +77,293 @@
         .icon-btn { 
             width: 48px; height: 48px; border-radius: 50%; 
             display: flex; align-items: center; justify-content: center; 
-            background: #111; border: 1px solid #222; cursor: pointer;
+            background: var(--card-bg); border: 1px solid var(--border-color); cursor: pointer;
         }
-        .add-btn { background: #2ecc71; border: none; }
+        .add-btn { background: var(--accent-green); border: none; }
 
-        /* Klikbare titel in de topbar */
-        #detail-title { cursor: pointer; }
-        #detail-title:active { opacity: 0.6; }
-
-        /* INPUT FIX: iOS datumveld gelijk aan rest */
         input { 
             width: 100%; padding: 18px; margin: 8px 0; border-radius: 16px; 
-            border: 1px solid #222; background: #111; color: white; 
+            border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); 
             font-size: 17px; box-sizing: border-box; display: block;
             appearance: none; -webkit-appearance: none; min-height: 58px;
         }
         
         .form-row { display: flex; gap: 10px; }
-        .btn-block { background: #2ecc71; padding: 20px; text-align: center; border-radius: 18px; margin-top: 25px; font-weight: 800; color: black; cursor: pointer; }
+        .btn-block { background: var(--accent-green); padding: 20px; text-align: center; border-radius: 18px; margin-top: 25px; font-weight: 800; color: black; cursor: pointer; }
         .btn-delete { color: #ff4757; text-align: center; padding: 15px; font-weight: 700; margin-top: 10px; cursor: pointer; opacity: 0.8; }
 
         .list-item { 
-            background: #111; padding: 20px; border-radius: 24px; margin-bottom: 12px; 
+            background: var(--list-item-bg); padding: 20px; border-radius: 24px; margin-bottom: 12px; 
             display: flex; justify-content: space-between; align-items: center; 
-            border: 1px solid #222; gap: 15px;
+            border: 1px solid var(--border-color); gap: 15px;
         }
-        .list-left { flex: 1; min-width: 0; }
-        .list-right { text-align: right; flex-shrink: 0; }
-        .list-date { color: #555; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; display: block; }
-        .list-stats { font-size: 18px; font-weight: 800; white-space: nowrap; }
-        .extra-metrics { display: flex; gap: 6px; margin-top: 6px; }
-        .m-badge { font-size: 10px; padding: 4px 8px; border-radius: 8px; background: #1a1a1a; color: #888; border: 1px solid #222; font-weight: 600; }
+        .list-date { color: var(--sub-text); font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; display: block; }
+        .list-stats { font-size: 18px; font-weight: 800; }
+        .m-badge { font-size: 10px; padding: 4px 8px; border-radius: 8px; background: rgba(128,128,128,0.1); color: var(--sub-text); border: 1px solid var(--border-color); font-weight: 600; }
         .bpm-badge { 
             background: rgba(0, 210, 255, 0.1); color: #00d2ff; padding: 6px 12px; 
             border-radius: 12px; font-weight: 900; border: 1px solid rgba(0, 210, 255, 0.2);
             display: inline-block; margin-bottom: 4px; font-family: tabular-nums;
         }
-        .ef-sub { color: #2ecc71; font-size: 13px; font-weight: 800; display: block; font-family: tabular-nums; }
+        .ef-sub { color: var(--accent-green); font-size: 13px; font-weight: 800; display: block; }
+
+        /* Settings Knop - Hersteld naar subtiele stijl */
+        .settings-fab { 
+            position: fixed; bottom: 30px; right: 25px; width: 55px; height: 55px; 
+            background: var(--fab-bg); border: 1px solid var(--border-color); border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            cursor: pointer; z-index: 999; box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+            touch-action: manipulation;
+        }
+        .settings-fab svg { stroke: var(--fab-stroke); }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--modal-overlay); z-index: 1000;
+            display: flex; align-items: flex-end; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        
+        .modal-content {
+            background: var(--card-bg); width: 100%; max-width: 500px;
+            border-radius: 30px 30px 0 0; padding: 30px 25px 50px 25px;
+            transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.1, 0.7, 0.1, 1);
+            border-top: 1px solid var(--border-color); max-height: 80vh; overflow-y: auto;
+        }
+        .modal-overlay.active .modal-content { transform: translateY(0); }
+
+        .modal-title { font-weight: 800; font-size: 20px; margin-bottom: 20px; text-align: center; color: var(--text-color); }
+        
+        .modal-btn { 
+            padding: 16px; border-radius: 16px; text-align: center; font-weight: 700; 
+            margin-top: 10px; cursor: pointer; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .btn-primary { background: var(--accent-green); color: black; }
+        .btn-secondary { background: var(--list-item-bg); border: 1px solid var(--border-color); color: var(--text-color); }
+        .btn-cancel { background: transparent; color: var(--sub-text); }
+
+        .sort-item { display: flex; justify-content: space-between; align-items: center; background: var(--list-item-bg); padding: 12px 18px; border-radius: 14px; margin-bottom: 8px; border: 1px solid var(--border-color); }
+        .sort-arrow { color: var(--accent-green); font-weight: 900; font-size: 20px; padding: 5px; cursor: pointer; }
+
+        .toggle-row {
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--list-item-bg); padding: 16px 20px; border-radius: 16px;
+            border: 1px solid var(--border-color); margin-bottom: 20px;
+        }
+        .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent-green); }
+        input:checked + .slider:before { transform: translateX(22px); }
+
+        #toast {
+            position: fixed; top: 30px; left: 50%; transform: translateX(-50%) translateY(-100px);
+            background: var(--accent-green); color: black; padding: 12px 25px; border-radius: 100px;
+            font-weight: 800; font-size: 14px; z-index: 2000; transition: transform 0.4s;
+        }
+        #toast.show { transform: translateX(-50%) translateY(0); }
     </style>
 </head>
 <body>
 
+<div id="toast">Melding</div>
+
+<div id="settings-modal" class="modal-overlay" onclick="closeModal('settings-modal')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-title">Beheer & Instellingen</div>
+        
+        <div class="toggle-row">
+            <span style="font-weight: 700;">Dark Mode</span>
+            <label class="switch">
+                <input type="checkbox" id="darkmode-toggle" onchange="toggleDarkMode()">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="modal-btn btn-primary" onclick="openAddModal()">
+            Nieuwe Grafiek Toevoegen
+        </div>
+
+        <div style="margin-top: 25px;">
+            <div style="font-size: 12px; font-weight: 800; color: var(--sub-text); text-transform: uppercase; margin-bottom: 10px;">Volgorde & Beheer</div>
+            <div id="sort-list"></div>
+        </div>
+
+        <div style="margin-top: 25px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="modal-btn btn-secondary" onclick="exportBackup()">Export</div>
+            <div class="modal-btn btn-secondary" onclick="document.getElementById('importFile').click()">Import</div>
+        </div>
+        <input type="file" id="importFile" class="hidden" accept=".json" onchange="importBackup(event)">
+        <div class="modal-btn btn-cancel" onclick="closeModal('settings-modal')">Sluiten</div>
+    </div>
+</div>
+
+<div id="add-modal" class="modal-overlay" onclick="closeModal('add-modal')"><div class="modal-content" onclick="event.stopPropagation()"><div class="modal-title">Nieuwe Grafiek</div><input type="text" id="add-name-input" placeholder="Naam..."><div class="modal-btn btn-primary" onclick="confirmAdd()">Toevoegen</div><div class="modal-btn btn-cancel" onclick="closeModal('add-modal')">Annuleren</div></div></div>
+<div id="rename-modal" class="modal-overlay" onclick="closeModal('rename-modal')"><div class="modal-content" onclick="event.stopPropagation()"><div class="modal-title">Naam Wijzigen</div><input type="text" id="rename-name-input"><div class="modal-btn btn-primary" onclick="confirmRenameDetail()">Opslaan</div><div class="modal-btn btn-cancel" onclick="closeModal('rename-modal')">Annuleren</div></div></div>
+<div id="delete-confirm-modal" class="modal-overlay" onclick="closeModal('delete-confirm-modal')"><div class="modal-content" onclick="event.stopPropagation()"><div class="modal-title" style="color: #ff4757;">⚠️ Verwijderen?</div><div class="modal-btn btn-danger" style="background:#ff4757; color:white; padding:16px; border-radius:16px; text-align:center; font-weight:700;" onclick="executeCategoryDelete()">Definitief Verwijderen</div><div class="modal-btn btn-cancel" onclick="closeModal('delete-confirm-modal')">Nee, ga terug</div></div></div>
+
 <div id="screen-home" class="container">
-    <div class="grid">
-        <button class="card" onclick="openDetail('cat1')">
-            <div class="card-header">
-                <span class="badge" id="name_cat1">Laden...</span>
-                <div id="val_cat1" class="latest-val">-- <span class="unit">EF</span></div>
-            </div>
-            <div class="mini-chart-container"><canvas id="mini_cat1"></canvas></div>
-        </button>
-        <button class="card" onclick="openDetail('cat2')">
-            <div class="card-header">
-                <span class="badge" id="name_cat2" style="color:#3498db; border-color:rgba(52,152,219,0.3); background:rgba(52,152,219,0.1);">Laden...</span>
-                <div id="val_cat2" class="latest-val">-- <span class="unit">EF</span></div>
-            </div>
-            <div class="mini-chart-container"><canvas id="mini_cat2"></canvas></div>
-        </button>
-        <button class="card" onclick="openDetail('cat3')">
-            <div class="card-header">
-                <span class="badge" id="name_cat3" style="color:#e67e22; border-color:rgba(230,126,34,0.3); background:rgba(230,126,34,0.1);">Laden...</span>
-                <div id="val_cat3" class="latest-val">-- <span class="unit">EF</span></div>
-            </div>
-            <div class="mini-chart-container"><canvas id="mini_cat3"></canvas></div>
-        </button>
+    <div class="grid" id="main-grid"></div>
+    <div class="settings-fab" onclick="openSettings()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
     </div>
 </div>
-
-<div id="screen-detail" class="container hidden">
-    <div class="topbar">
-        <button class="icon-btn" onclick="showHome()">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2ecc71" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-        </button>
-        <div id="detail-title" style="font-weight: 800; font-size: 19px; text-transform: uppercase;" onclick="renameCurrentCategory()"></div>
-        <button class="icon-btn add-btn" onclick="showForm()">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        </button>
-    </div>
-    <div id="run-list"></div>
-</div>
-
-<div id="screen-form" class="container hidden">
-    <div class="topbar">
-        <button class="icon-btn" onclick="cancelForm()">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-        </button>
-        <div style="font-weight:800; font-size: 18px;">Training Invoeren</div>
-        <div style="width:48px;"></div>
-    </div>
-    <input type="hidden" id="edit-index">
-    <input type="date" id="input-date">
-    <input type="number" id="input-dist" step="0.01" placeholder="Afstand (km)" inputmode="decimal">
-    <input type="number" id="input-hr" placeholder="Gem. hartslag" inputmode="numeric">
-    <div class="form-row">
-        <input type="number" id="input-h" placeholder="Uur" inputmode="numeric">
-        <input type="number" id="input-m" placeholder="Min" inputmode="numeric">
-        <input type="number" id="input-s" placeholder="Sec" inputmode="numeric">
-    </div>
-    <div class="btn-block" onclick="saveRun()">Opslaan</div>
-    <div id="delete-container" class="hidden" onclick="deleteRun()"><div class="btn-delete">Verwijder training</div></div>
-</div>
+<div id="screen-detail" class="container hidden"><div class="topbar"><button class="icon-btn" onclick="showHome()"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button><div id="detail-title" style="font-weight: 800; font-size: 19px; text-transform: uppercase;" onclick="openRenameDetail()"></div><button class="icon-btn add-btn" onclick="showForm()"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button></div><div id="run-list"></div></div>
+<div id="screen-form" class="container hidden"><div class="topbar"><button class="icon-btn" onclick="cancelForm()"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--sub-text)" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg></button><div style="font-weight:800;">Training Invoeren</div><div style="width:48px;"></div></div><input type="hidden" id="edit-index"><input type="date" id="input-date"><input type="number" id="input-dist" step="0.01" placeholder="Afstand (km)"><input type="number" id="input-hr" placeholder="Hartslag"><div class="form-row"><input type="number" id="input-h" placeholder="Uur"><input type="number" id="input-m" placeholder="Min"><input type="number" id="input-s" placeholder="Sec"></div><div class="btn-block" onclick="saveRun()">Opslaan</div><div id="delete-container" class="hidden" onclick="deleteRun()"><div class="btn-delete">Verwijder training</div></div></div>
 
 <script>
 let currentCategory = "";
 let charts = {};
 
-const defaultNames = { cat1: "Zone 2", cat2: "VO2max", cat3: "Afstand" };
-
-function getCategoryName(id) {
-    return localStorage.getItem('name_' + id) || defaultNames[id];
+function initTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    document.getElementById('darkmode-toggle').checked = (savedTheme === 'dark');
 }
 
-// Nieuwe functie om de huidige categorie te hernoemen vanaf scherm 2
-function renameCurrentCategory() {
-    const oldName = getCategoryName(currentCategory);
-    const newName = prompt("Nieuwe naam voor deze training:", oldName);
-    if (newName && newName.trim() !== "") {
-        localStorage.setItem('name_' + currentCategory, newName.trim());
-        document.getElementById('detail-title').innerText = newName.trim();
-        updateDashboard(); // Werk ook de namen op de achtergrond bij
+function toggleDarkMode() {
+    const isDark = document.getElementById('darkmode-toggle').checked;
+    const theme = isDark ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+    updateDashboard();
+}
+
+function showToast(msg, color = "var(--accent-green)") {
+    const t = document.getElementById('toast');
+    t.innerText = msg; t.style.background = color; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function openSettings() { renderSortList(); document.getElementById('settings-modal').classList.add('active'); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+function openRenameDetail() { document.getElementById('rename-name-input').value = getCategoryName(currentCategory); document.getElementById('rename-modal').classList.add('active'); }
+function confirmRenameDetail() {
+    const val = document.getElementById('rename-name-input').value.trim();
+    if (val !== "") { localStorage.setItem('name_' + currentCategory, val); document.getElementById('detail-title').innerText = val; updateDashboard(); closeModal('rename-modal'); showToast("Naam bijgewerkt"); }
+}
+
+function renderSortList() {
+    const cats = getCategories();
+    document.getElementById('sort-list').innerHTML = cats.map(id => `
+        <div class="sort-item"><span style="font-weight:700;">${getCategoryName(id)}</span>
+        <div class="sort-controls"><span class="sort-arrow" onclick="moveCat('${id}', -1)">↑</span><span class="sort-arrow" onclick="moveCat('${id}', 1)">↓</span>
+        <span style="color:#ff4757; font-size:18px; padding:5px; cursor:pointer;" onclick="prepDelete('${id}')">✕</span></div></div>`).join('');
+}
+
+function moveCat(id, dir) {
+    let cats = getCategories(); let idx = cats.indexOf(id); let newIdx = idx + dir;
+    if (newIdx >= 0 && newIdx < cats.length) { [cats[idx], cats[newIdx]] = [cats[newIdx], cats[idx]]; localStorage.setItem('active_categories', JSON.stringify(cats)); renderSortList(); updateDashboard(); }
+}
+
+function openAddModal() { document.getElementById('add-name-input').value = ""; document.getElementById('add-modal').classList.add('active'); }
+function confirmAdd() {
+    const name = document.getElementById('add-name-input').value.trim();
+    if (name !== "") {
+        const newId = 'cat_' + Date.now();
+        let cats = getCategories(); cats.push(newId);
+        localStorage.setItem('active_categories', JSON.stringify(cats));
+        localStorage.setItem('name_' + newId, name);
+        updateDashboard(); closeModal('add-modal'); renderSortList(); showToast("Grafiek toegevoegd");
     }
 }
 
-function getLocalData(cat) {
-    let data = JSON.parse(localStorage.getItem('rundata_' + cat)) || [];
-    data = data.map(d => {
-        if (!d.speed || !d.pace) {
-            const totalMin = (parseInt(d.h || 0) * 60) + parseInt(d.m || 0) + (parseInt(d.s || 0) / 60);
-            if (totalMin > 0) {
-                d.speed = (parseFloat(d.dist) / (totalMin / 60)).toFixed(1);
-                const pMin = Math.floor(totalMin / parseFloat(d.dist));
-                const pSec = Math.round((totalMin / parseFloat(d.dist) - pMin) * 60);
-                d.pace = `${pMin}:${pSec < 10 ? '0' + pSec : pSec}`;
-            }
-        }
-        return d;
-    });
-    return data.sort((a,b) => new Date(a.date) - new Date(b.date));
+let catToDelete = "";
+function prepDelete(id) { catToDelete = id; document.getElementById('delete-confirm-modal').classList.add('active'); }
+function executeCategoryDelete() {
+    let cats = getCategories(); cats = cats.filter(c => c !== catToDelete);
+    localStorage.setItem('active_categories', JSON.stringify(cats));
+    localStorage.removeItem('rundata_' + catToDelete); localStorage.removeItem('name_' + catToDelete);
+    closeModal('delete-confirm-modal'); renderSortList(); updateDashboard(); showToast("Grafiek verwijderd", "#ff4757");
 }
 
+function exportBackup() {
+    let backup = { active_categories: getCategories(), names: {}, data: {} };
+    backup.active_categories.forEach(id => { backup.names[id] = getCategoryName(id); backup.data[id] = JSON.parse(localStorage.getItem('rundata_' + id)) || []; });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(backup)], {type: 'application/json'})); a.download = `RunTrack_Backup.json`; a.click(); showToast("Backup geëxporteerd");
+}
+
+function importBackup(event) {
+    const file = event.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const b = JSON.parse(e.target.result);
+            localStorage.setItem('active_categories', JSON.stringify(b.active_categories));
+            Object.keys(b.names).forEach(id => localStorage.setItem('name_' + id, b.names[id]));
+            Object.keys(b.data).forEach(id => localStorage.setItem('rundata_' + id, JSON.stringify(b.data[id])));
+            showToast("Geladen!"); setTimeout(() => location.reload(), 1000);
+        } catch(err) { showToast("Fout: Bestand", "#ff4757"); }
+    }; reader.readAsText(file);
+}
+
+function getCategories() { return JSON.parse(localStorage.getItem('active_categories')) || ['cat1', 'cat2', 'cat3']; }
+function getCategoryName(id) { return localStorage.getItem('name_' + id) || {cat1:"Zone 2", cat2:"VO2max", cat3:"Afstand"}[id] || "Grafiek"; }
+function getLocalData(cat) { return (JSON.parse(localStorage.getItem('rundata_' + cat)) || []).sort((a,b) => new Date(a.date) - new Date(b.date)); }
+
 function saveRun() {
-    const dist = parseFloat(document.getElementById('input-dist').value);
-    const hr = parseFloat(document.getElementById('input-hr').value);
-    const h = parseInt(document.getElementById('input-h').value) || 0;
-    const m = parseInt(document.getElementById('input-m').value) || 0;
-    const s = parseInt(document.getElementById('input-s').value) || 0;
-    if(!dist || !hr || (h+m+s === 0)) return alert("Vul alles volledig in!");
-    
-    const totalMin = (h * 60) + m + (s / 60);
-    const ef = ((dist * 1000) / totalMin) / hr;
+    const dist = parseFloat(document.getElementById('input-dist').value); const hr = parseFloat(document.getElementById('input-hr').value);
+    const h = parseInt(document.getElementById('input-h').value) || 0; const m = parseInt(document.getElementById('input-m').value) || 0; const s = parseInt(document.getElementById('input-s').value) || 0;
+    if(!dist || !hr || (h+m+s === 0)) return showToast("Vul alles in!", "#ff4757");
+    const totalMin = (h * 60) + m + (s / 60); const ef = ((dist * 1000) / totalMin) / hr;
     let data = JSON.parse(localStorage.getItem('rundata_' + currentCategory)) || [];
-    const entry = {
-        date: document.getElementById('input-date').value,
-        dist: dist.toFixed(2), hr, h, m, s, ef, displayVal: ef.toFixed(2),
-        timeStr: `${h>0?h+'u ':''}${m}m ${s}s`,
-        speed: (dist / (totalMin / 60)).toFixed(1),
-        pace: `${Math.floor(totalMin/dist)}:${Math.round((totalMin/dist - Math.floor(totalMin/dist))*60).toString().padStart(2,'0')}`
-    };
+    const entry = { date: document.getElementById('input-date').value, dist: dist.toFixed(2), hr, h, m, s, ef, displayVal: ef.toFixed(2), timeStr: `${h>0?h+'u ':''}${m}m ${s}s`, speed: (dist / (totalMin / 60)).toFixed(1), pace: `${Math.floor(totalMin/dist)}:${Math.round((totalMin/dist - Math.floor(totalMin/dist))*60).toString().padStart(2,'0')}` };
     const idx = document.getElementById('edit-index').value;
-    if(idx !== "" && idx > -1) { data[parseInt(idx)] = entry; } else { data.push(entry); }
+    if(idx !== "" && idx > -1) data[parseInt(idx)] = entry; else data.push(entry);
     localStorage.setItem('rundata_' + currentCategory, JSON.stringify(data));
-    openDetail(currentCategory);
+    showToast("Opgeslagen"); openDetail(currentCategory);
 }
 
 function renderList() {
     const data = getLocalData(currentCategory);
     document.getElementById('run-list').innerHTML = [...data].reverse().map((d, i) => `
         <div class="list-item" onclick="showForm(${data.length - 1 - i})">
-            <div class="list-left">
-                <span class="list-date">${new Date(d.date).toLocaleDateString('nl-NL', {day:'numeric', month:'short'})}</span>
-                <div class="list-stats">${d.dist} km <span style="font-size:12px; color:#444; font-weight:500;">${d.timeStr}</span></div>
-                <div class="extra-metrics">
-                    <span class="m-badge">${d.speed || '--'} km/u</span>
-                    <span class="m-badge">${d.pace || '--'} min/km</span>
-                </div>
-            </div>
-            <div class="list-right">
-                <span class="bpm-badge">${d.hr} BPM</span>
-                <span class="ef-sub">${d.displayVal} EF</span>
-            </div>
-        </div>`).join('');
+            <div style="flex:1"><span class="list-date">${new Date(d.date).toLocaleDateString('nl-NL', {day:'numeric', month:'short'})}</span>
+            <div class="list-stats">${d.dist} km <span style="font-size:12px; opacity:0.5;">${d.timeStr}</span></div>
+            <div style="display:flex; gap:6px; margin-top:6px;"><span class="m-badge">${d.speed} km/u</span><span class="m-badge">${d.pace} min/km</span></div></div>
+            <div style="text-align:right"><span class="bpm-badge">${d.hr} BPM</span><span class="ef-sub">${d.displayVal} EF</span></div></div>`).join('');
 }
 
 function updateDashboard() {
-    ['cat1', 'cat2', 'cat3'].forEach(id => {
-        document.getElementById('name_' + id).innerText = getCategoryName(id);
-        const data = getLocalData(id);
-        const lastVal = data.length > 0 ? data[data.length - 1].displayVal : "--";
-        document.getElementById('val_' + id).innerHTML = `${lastVal} <span class="unit">EF</span>`;
-        const canvas = document.getElementById('mini_' + id);
-        if (!canvas) return;
-        if(charts[id]) charts[id].destroy();
-        charts[id] = new Chart(canvas.getContext('2d'), {
-            type: 'line',
-            data: {
-                labels: data.map(d => d.date),
-                datasets: [{ 
-                    data: data.map(d => d.ef), 
-                    borderColor: id === 'cat1' ? '#2ecc71' : (id === 'cat2' ? '#3498db' : '#e67e22'), 
-                    borderWidth: 3, pointRadius: 0, tension: 0.4, fill: true,
-                    backgroundColor: 'rgba(255,255,255,0.02)'
-                }]
-            },
-            options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false, grace: '15%' } } }
-        });
+    const grid = document.getElementById('main-grid'); grid.innerHTML = '';
+    getCategories().forEach((id, index) => {
+        const data = getLocalData(id); const lastVal = data.length > 0 ? data[data.length - 1].displayVal : "--";
+        const color = ['#2ecc71', '#3498db', '#e67e22', '#9b59b6', '#f1c40f', '#e74c3c'][index % 6];
+        grid.innerHTML += `<button class="card" onclick="openDetail('${id}')">
+            <div class="card-header"><span class="badge" style="color:${color}; border-color:${color}44;">${getCategoryName(id)}</span>
+            <div class="latest-val">${lastVal} <span class="unit">EF</span></div></div>
+            <div class="mini-chart-container"><canvas id="mini_${id}"></canvas></div></button>`;
+        setTimeout(() => {
+            const canvasElem = document.getElementById('mini_' + id);
+            if(!canvasElem) return;
+            const ctx = canvasElem.getContext('2d');
+            if(charts[id]) charts[id].destroy();
+            charts[id] = new Chart(ctx, {
+                type: 'line',
+                data: { labels: data.map(d => d.date), datasets: [{ data: data.map(d => d.ef), borderColor: color, borderWidth: 3, pointRadius: 0, tension: 0.4, fill: true, backgroundColor: 'rgba(46, 204, 113, 0.05)' }] },
+                options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false, grace: '15%' } } }
+            });
+        }, 50);
     });
 }
 
 function showHome() { hideAll(); document.getElementById('screen-home').classList.remove('hidden'); updateDashboard(); }
-function openDetail(cat) { 
-    currentCategory = cat; 
-    hideAll(); 
-    document.getElementById('screen-detail').classList.remove('hidden'); 
-    document.getElementById('detail-title').innerText = getCategoryName(cat); 
-    renderList(); 
-}
-
+function openDetail(cat) { currentCategory = cat; hideAll(); document.getElementById('screen-detail').classList.remove('hidden'); document.getElementById('detail-title').innerText = getCategoryName(cat); renderList(); }
 function showForm(idx = -1) { 
-    hideAll(); 
-    document.getElementById('screen-form').classList.remove('hidden'); 
-    document.getElementById('edit-index').value = idx;
-    if(idx > -1) {
-        const d = getLocalData(currentCategory)[idx];
-        document.getElementById('input-date').value = d.date;
-        document.getElementById('input-dist').value = d.dist;
-        document.getElementById('input-hr').value = d.hr;
-        document.getElementById('input-h').value = d.h;
-        document.getElementById('input-m').value = d.m;
-        document.getElementById('input-s').value = d.s;
-        document.getElementById('delete-container').classList.remove('hidden');
-    } else {
-        document.getElementById('input-date').valueAsDate = new Date();
-        ['input-dist', 'input-hr', 'input-h', 'input-m', 'input-s'].forEach(id => document.getElementById(id).value = "");
-        document.getElementById('delete-container').classList.add('hidden');
-    }
+    hideAll(); document.getElementById('screen-form').classList.remove('hidden'); document.getElementById('edit-index').value = idx;
+    if(idx > -1) { const d = getLocalData(currentCategory)[idx]; document.getElementById('input-date').value = d.date; document.getElementById('input-dist').value = d.dist; document.getElementById('input-hr').value = d.hr; document.getElementById('input-h').value = d.h; document.getElementById('input-m').value = d.m; document.getElementById('input-s').value = d.s; document.getElementById('delete-container').classList.remove('hidden'); }
+    else { document.getElementById('input-date').valueAsDate = new Date(); ['input-dist', 'input-hr', 'input-h', 'input-m', 'input-s'].forEach(id => document.getElementById(id).value = ""); document.getElementById('delete-container').classList.add('hidden'); }
 }
-
-function deleteRun() { if(confirm("Training verwijderen?")) { let data = JSON.parse(localStorage.getItem('rundata_' + currentCategory)) || []; data.splice(document.getElementById('edit-index').value, 1); localStorage.setItem('rundata_' + currentCategory, JSON.stringify(data)); openDetail(currentCategory); } }
+function deleteRun() { if(confirm("Training verwijderen?")) { let data = getLocalData(currentCategory); data.splice(document.getElementById('edit-index').value, 1); localStorage.setItem('rundata_' + currentCategory, JSON.stringify(data)); showToast("Verwijderd", "#ff4757"); openDetail(currentCategory); } }
 function cancelForm() { openDetail(currentCategory); }
 function hideAll() { document.querySelectorAll('.container').forEach(c => c.classList.add('hidden')); }
 
-window.onload = showHome;
+window.onload = () => { initTheme(); showHome(); };
 </script>
 </body>
 </html>
